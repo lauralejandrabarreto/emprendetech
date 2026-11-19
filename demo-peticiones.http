@@ -1,0 +1,29 @@
+### 1. Crear pedido (queda PENDIENTE)
+POST http://localhost:8080/api/pedidos
+Content-Type: application/json
+
+{"compradorId": 1, "localidad": "Chapinero", "total": 85000, "contraentrega": false}
+
+### 2. Pagar con Nequi (Strategy elige NequiAdapter) -> copiar la "referencia" de la respuesta
+POST http://localhost:8080/api/pagos
+Content-Type: application/json
+
+{"pedidoId": 1, "monto": 85000, "metodo": "NEQUI", "identificadorPagador": "3001234567"}
+
+### 3. Intentar enviar sin pagar -> 409 (State lo impide)
+PATCH http://localhost:8080/api/pedidos/1/enviar
+
+### 4. Webhook de la pasarela confirma el pago (pegar la referencia del paso 2)
+POST http://localhost:8080/api/pagos/webhook
+Content-Type: application/json
+
+{"referencia": " ", "aprobado": true}
+
+### 5. Consultar pedido -> PAGADO (Observer: Pedidos reaccionó al evento de Pagos)
+GET http://localhost:8080/api/pedidos/1
+
+### 6. Enviar -> ENVIADO
+PATCH http://localhost:8080/api/pedidos/1/enviar
+
+### 7. Entregar -> ENTREGADO
+PATCH http://localhost:8080/api/pedidos/1/entregar
